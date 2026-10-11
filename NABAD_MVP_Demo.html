@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NABAD نبض — Live Product Demo</title>
+<style>
+  :root{
+    --navy:#0D2137; --card:#122940; --card2:#16324A; --teal:#028090; --mint:#02C39A;
+    --coral:#E55050; --sky:#8FB8C8; --white:#FFFFFF; --off:#F5F8FA; --ink:#0D2137;
+    --slate:#5A7385; --line:#DCE6EA;
+    --red:#E5484D; --orange:#F2994A; --yellow:#E5C13D; --green:#02C39A; --blue:#5B9BD5;
+    --wa-bg:#E9EDEF; --wa-bubble:#D9FDD3; --wa-header:#075E54;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--navy);color:var(--ink);}
+  .brand-font{font-family:Georgia,"Cambria",serif;}
+
+  /* ---------- Top nav ---------- */
+  .topnav{position:sticky;top:0;z-index:50;background:var(--navy);border-bottom:1px solid #1c3852;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+  .brand{display:flex;align-items:center;gap:10px;color:#fff;}
+  .brand .logo{width:34px;height:34px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;}
+  .brand .logo svg{width:19px;height:19px;}
+  .brand .name{font-size:19px;font-weight:700;}
+  .brand .name .ar{color:var(--mint);margin-left:6px;}
+  .tag{font-size:11px;color:var(--sky);border:1px solid #234a63;padding:2px 8px;border-radius:20px;margin-left:8px;}
+  .nav-tabs{display:flex;gap:6px;background:var(--card);padding:4px;border-radius:10px;}
+  .nav-tabs button{border:none;background:transparent;color:var(--sky);padding:9px 16px;border-radius:8px;font-size:13.5px;font-weight:600;cursor:pointer;transition:.15s;display:flex;align-items:center;gap:7px;}
+  .nav-tabs button.active{background:var(--teal);color:#fff;}
+  .nav-tabs button:hover:not(.active){color:#fff;}
+  .nav-right{display:flex;align-items:center;gap:10px;}
+  .btn-ghost{background:transparent;border:1px solid #234a63;color:var(--sky);padding:8px 14px;border-radius:8px;font-size:12.5px;cursor:pointer;font-weight:600;}
+  .btn-ghost:hover{border-color:var(--mint);color:#fff;}
+
+  .disclaimer{background:#0A1D2C;color:var(--sky);font-size:11.5px;text-align:center;padding:6px 16px;border-bottom:1px solid #1c3852;}
+  .disclaimer b{color:var(--mint);}
+
+  .view{display:none;padding:26px 20px 60px;max-width:1360px;margin:0 auto;}
+  .view.active{display:block;}
+
+  /* ================= PATIENT VIEW ================= */
+  #patientView{display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap;justify-content:center;}
+  .patient-intro{max-width:360px;color:#fff;padding-top:10px;}
+  .patient-intro .eyebrow{color:var(--mint);font-size:12px;font-weight:700;letter-spacing:1.5px;margin-bottom:8px;}
+  .patient-intro h1{font-size:26px;margin:0 0 10px;font-family:Georgia,serif;}
+  .patient-intro p{color:var(--sky);font-size:14px;line-height:1.6;}
+  .scenario-list{margin-top:18px;display:flex;flex-direction:column;gap:8px;}
+  .scenario-btn{text-align:left;background:var(--card);border:1px solid #1c3852;color:#fff;padding:11px 14px;border-radius:10px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:10px;transition:.15s;}
+  .scenario-btn:hover{border-color:var(--mint);background:var(--card2);}
+  .scenario-btn .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+
+  .phone{width:380px;height:700px;background:#000;border-radius:38px;padding:10px;box-shadow:0 30px 60px rgba(0,0,0,.5);flex-shrink:0;}
+  .phone-screen{width:100%;height:100%;background:var(--wa-bg);border-radius:28px;overflow:hidden;display:flex;flex-direction:column;position:relative;}
+  .wa-header{background:var(--wa-header);color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px;}
+  .wa-header .avatar{width:36px;height:36px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;}
+  .wa-header .avatar svg{width:18px;height:18px;}
+  .wa-header .who{flex:1;}
+  .wa-header .who .n{font-weight:700;font-size:14.5px;}
+  .wa-header .who .s{font-size:11px;opacity:.85;}
+  .wa-body{flex:1;overflow-y:auto;padding:14px 10px;display:flex;flex-direction:column;gap:3px;background-image:radial-gradient(circle at 20% 10%, rgba(255,255,255,.04) 0, transparent 40%);}
+  .bubble-row{display:flex;margin:3px 0;}
+  .bubble-row.bot{justify-content:flex-start;}
+  .bubble-row.user{justify-content:flex-end;}
+  .bubble{max-width:78%;padding:8px 10px;border-radius:9px;font-size:13.5px;line-height:1.42;box-shadow:0 1px 1px rgba(0,0,0,.08);position:relative;}
+  .bubble.bot{background:#fff;color:#111;border-top-left-radius:2px;}
+  .bubble.user{background:var(--wa-bubble);color:#111;border-top-right-radius:2px;}
+  .bubble .time{display:block;font-size:9.5px;color:#8a8a8a;text-align:right;margin-top:3px;}
+  .bubble b{color:var(--teal);}
+  .result-card{margin-top:6px;border-radius:10px;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,.15);max-width:82%;}
+  .result-head{padding:9px 12px;color:#fff;font-weight:700;font-size:13.5px;display:flex;align-items:center;justify-content:space-between;}
+  .result-body{background:#fff;padding:10px 12px;font-size:12.5px;color:#222;line-height:1.5;}
+  .result-body .row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed #eee;}
+  .result-body .row:last-child{border-bottom:none;}
+
+  .chips{display:flex;flex-wrap:wrap;gap:6px;padding:8px 10px 4px;}
+  .chip{background:#fff;border:1px solid #cfe3e0;color:var(--wa-header);padding:7px 11px;border-radius:20px;font-size:12px;cursor:pointer;font-weight:600;}
+  .chip:hover{background:var(--wa-header);color:#fff;}
+  .slider-wrap{padding:8px 12px;background:#fff;margin:4px 10px 8px;border-radius:12px;}
+  .slider-wrap input{width:100%;}
+  .slider-wrap .val{text-align:center;font-weight:700;color:var(--wa-header);font-size:13px;}
+  .wa-inputbar{padding:8px 10px;background:#f0f0f0;display:flex;gap:8px;align-items:center;}
+  .wa-inputbar input{flex:1;border:none;border-radius:20px;padding:10px 14px;font-size:13px;outline:none;}
+  .wa-inputbar button{background:var(--wa-header);color:#fff;border:none;width:38px;height:38px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .typing{display:flex;gap:4px;padding:10px 12px;background:#fff;border-radius:9px;width:fit-content;}
+  .typing span{width:6px;height:6px;background:#999;border-radius:50%;animation:blink 1.2s infinite ease-in-out;}
+  .typing span:nth-child(2){animation-delay:.2s;} .typing span:nth-child(3){animation-delay:.4s;}
+  @keyframes blink{0%,80%,100%{opacity:.3;transform:translateY(0);}40%{opacity:1;transform:translateY(-2px);}}
+
+  /* ================= DASHBOARD VIEW ================= */
+  .dash-head{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:14px;margin-bottom:18px;}
+  .dash-head h1{color:#fff;font-family:Georgia,serif;font-size:24px;margin:0 0 4px;}
+  .dash-head p{color:var(--sky);font-size:13px;margin:0;}
+  .live-badge{display:flex;align-items:center;gap:6px;color:var(--mint);font-size:12.5px;font-weight:700;}
+  .live-dot{width:8px;height:8px;border-radius:50%;background:var(--mint);animation:pulse 1.4s infinite;}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(2,195,154,.6);}70%{box-shadow:0 0 0 8px rgba(2,195,154,0);}100%{box-shadow:0 0 0 0 rgba(2,195,154,0);}}
+
+  .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+  .kpi{background:var(--card);border-radius:12px;padding:16px 18px;}
+  .kpi .lbl{color:var(--sky);font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
+  .kpi .num{color:#fff;font-size:28px;font-weight:700;margin-top:4px;font-family:Georgia,serif;}
+  .kpi .sub{color:var(--sky);font-size:11px;margin-top:2px;}
+
+  .dash-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:18px;align-items:start;}
+  .panel{background:var(--card);border-radius:14px;padding:18px 20px;}
+  .panel h2{color:#fff;font-size:15px;margin:0 0 4px;font-family:Georgia,serif;}
+  .panel .sub{color:var(--sky);font-size:11.5px;margin:0 0 14px;}
+
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  th{text-align:left;color:var(--sky);font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;padding:6px 8px;border-bottom:1px solid #1c3852;}
+  td{padding:9px 8px;color:#fff;border-bottom:1px solid #17324a;vertical-align:middle;}
+  tr.qrow{cursor:pointer;transition:.1s;}
+  tr.qrow:hover{background:#0f2d44;}
+  .badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;color:#fff;}
+  .badge .d{width:6px;height:6px;border-radius:50%;background:#fff;}
+  .empty-row td{color:var(--sky);text-align:center;padding:26px;font-style:italic;}
+
+  .detail{margin-top:10px;background:#0a1d2c;border-radius:10px;padding:12px 14px;font-size:11.5px;color:var(--sky);display:none;}
+  .detail.open{display:block;}
+  .detail .reason{padding:2px 0;border-bottom:1px dashed #1c3852;}
+  .detail .reason:last-child{border-bottom:none;}
+
+  .surge-chart{display:flex;align-items:flex-end;gap:5px;height:150px;margin-top:6px;}
+  .surge-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end;}
+  .surge-bar{width:100%;border-radius:4px 4px 0 0;background:linear-gradient(180deg,var(--teal),var(--mint));position:relative;}
+  .surge-bar.now{background:linear-gradient(180deg,var(--coral),#c73e3e);}
+  .surge-lbl{color:var(--sky);font-size:9px;}
+
+  .alert-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #17324a;}
+  .alert-item:last-child{border-bottom:none;}
+  .alert-dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0;}
+  .alert-item .t{color:#fff;font-size:12.5px;font-weight:600;}
+  .alert-item .s{color:var(--sky);font-size:11px;}
+
+  .sim-btn-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+  .sim-btn{background:var(--card2);border:1px solid #234a63;color:var(--sky);font-size:11.5px;padding:7px 12px;border-radius:8px;cursor:pointer;font-weight:600;}
+  .sim-btn:hover{border-color:var(--mint);color:#fff;}
+
+  @media (max-width:900px){
+    .dash-grid{grid-template-columns:1fr;}
+    .kpi-row{grid-template-columns:1fr 1fr;}
+    #patientView{flex-direction:column;align-items:center;}
+    .phone{width:100%;max-width:380px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topnav">
+  <div class="brand">
+    <div class="logo"><svg viewBox="0 0 512 512" fill="#fff"><path d="M471.9 271.5L293.8 449.5c-20.9 20.9-54.7 20.9-75.6 0L40.1 271.5C15 246.4 0 211.9 0 176.4v-2.7C0 106.5 51.5 51.7 118 48.4c36.6-1.8 71.9 13.8 95 41.9l43 52.1 43-52.1c23.1-28.1 58.4-43.7 95-41.9 66.5 3.3 118 58.1 118 125.3v2.7c0 35.5-15 70-40.1 95.1z"/></svg></div>
+    <span class="name">NABAD <span class="ar brand-font">نبض</span></span>
+    <span class="tag">LIVE PRODUCT DEMO</span>
+  </div>
+  <div class="nav-tabs">
+    <button id="tabPatient" class="active" onclick="switchView('patient')">📱 Patient Experience</button>
+    <button id="tabDash" onclick="switchView('dash')">🏥 Hospital Dashboard</button>
+  </div>
+  <div class="nav-right">
+    <button class="btn-ghost" onclick="resetDemo()">↺ Reset demo</button>
+  </div>
+</div>
+<div class="disclaimer">⚠ <b>Investor demo prototype</b> — triage logic is illustrative (modeled loosely on the Manchester Triage System) and is <b>not</b> a certified medical device. Clinical validation required before real-world deployment.</div>
+
+<!-- ============ PATIENT VIEW ============ -->
+<div id="patientView" class="view active">
+  <div class="patient-intro">
+    <div class="eyebrow">PATIENT EXPERIENCE</div>
+    <h1>Message Nabad the way you'd message a friend.</h1>
+    <p>This is a fully working simulation of the patient conversation — real AI-style triage logic runs live in your browser. Try a preset scenario, or type your own symptoms into the chat.</p>
+    <div class="scenario-list" id="scenarioList"></div>
+  </div>
+  <div class="phone">
+    <div class="phone-screen">
+      <div class="wa-header">
+        <div class="avatar"><svg viewBox="0 0 512 512" fill="#fff"><path d="M471.9 271.5L293.8 449.5c-20.9 20.9-54.7 20.9-75.6 0L40.1 271.5C15 246.4 0 211.9 0 176.4v-2.7C0 106.5 51.5 51.7 118 48.4c36.6-1.8 71.9 13.8 95 41.9l43 52.1 43-52.1c23.1-28.1 58.4-43.7 95-41.9 66.5 3.3 118 58.1 118 125.3v2.7c0 35.5-15 70-40.1 95.1z"/></svg></div>
+        <div class="who">
+          <div class="n">Nabad Triage Assistant</div>
+          <div class="s" id="waStatus">online</div>
+        </div>
+      </div>
+      <div class="wa-body" id="waBody"></div>
+      <div id="chipZone"></div>
+      <div class="wa-inputbar">
+        <input id="freeText" type="text" placeholder="Type a message…" onkeydown="if(event.key==='Enter')sendFreeText()">
+        <button onclick="sendFreeText()">➤</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ DASHBOARD VIEW ============ -->
+<div id="dashView" class="view">
+  <div class="dash-head">
+    <div>
+      <h1>Tripoli General — Live Patient Flow</h1>
+      <p>Real-time queue, AI urgency scoring, and predicted surge — updates instantly as patients message in.</p>
+    </div>
+    <div class="live-badge"><span class="live-dot"></span> LIVE</div>
+  </div>
+
+  <div class="kpi-row" id="kpiRow"></div>
+
+  <div class="dash-grid">
+    <div class="panel">
+      <h2>Incoming Patient Queue</h2>
+      <p class="sub">Click any row to see the AI's full reasoning trail.</p>
+      <table>
+        <thead><tr><th>Patient</th><th>Symptom</th><th>Urgency</th><th>Score</th><th>Received</th><th>Status</th></tr></thead>
+        <tbody id="queueBody"></tbody>
+      </table>
+    </div>
+
+    <div>
+      <div class="panel" style="margin-bottom:18px;">
+        <h2>Predicted Patient Surge — Today</h2>
+        <p class="sub">Forecast from historical + live incoming-message volume.</p>
+        <div class="surge-chart" id="surgeChart"></div>
+      </div>
+      <div class="panel">
+        <h2>Critical Alerts</h2>
+        <p class="sub">Auto-flagged RED / ORANGE cases needing immediate attention.</p>
+        <div id="alertList"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:18px;">
+    <h2>Simulate incoming patients</h2>
+    <p class="sub">For demo purposes — instantly injects a new patient into the live queue without using the phone.</p>
+    <div class="sim-btn-row" id="simBtnRow"></div>
+  </div>
+</div>
+
+<script>
+/* ======================================================================
+   NABAD MVP — Functional prototype
+   - Real rule-based AI triage engine (transparent scoring, not a black box)
+   - Patient-facing WhatsApp-style conversational flow
+   - Live hospital dashboard fed by the same shared in-memory state
+   ====================================================================== */
+
+/* ---------------- 1. TRIAGE ENGINE ---------------- */
+const SYMPTOM_BASE = {
+  chest_pain: { label: "Chest pain", base: 35, icon:"❤️" },
+  breathing:  { label: "Difficulty breathing", base: 40, icon:"🫁" },
+  bleeding:   { label: "Bleeding / injury", base: 35, icon:"🩸" },
+  fever:      { label: "High fever", base: 15, icon:"🌡️" },
+  abdominal:  { label: "Abdominal pain", base: 20, icon:"🤕" },
+  headache:   { label: "Severe headache", base: 10, icon:"🧠" },
+  other:      { label: "Other concern", base: 5, icon:"💬" },
+};
+const REDFLAG_QUESTIONS = {
+  chest_pain: [["sweating","Are you sweating or feeling nauseous?"],["radiating","Does the pain spread to your arm, jaw, or back?"]],
+  breathing:  [["cant_speak","Can you speak in full sentences right now?"],["blue_lips","Do your lips or fingertips look bluish?"]],
+  bleeding:   [["wont_stop","Has the bleeding continued for more than 10 minutes?"],["faint","Do you feel faint or dizzy?"]],
+  fever:      [["stiff_neck","Do you have a stiff neck or a rash?"],["confused","Any confusion or unusual drowsiness?"]],
+  abdominal:  [["rigid","Is your abdomen rigid or extremely tender to touch?"],["vomiting_blood","Have you vomited blood or dark material?"]],
+  headache:   [["worst_ever","Is this the worst headache you've ever had, and sudden?"],["vision_loss","Any vision changes or loss?"]],
+  other:      [],
+};
+function computeTriage(a){
+  const s = SYMPTOM_BASE[a.symptom] || SYMPTOM_BASE.other;
+  let score = s.base;
+  const reasons = [`Base severity — ${s.label}: +${s.base}`];
+  (a.redFlags||[]).forEach(f=>{ score+=20; reasons.push(`Red-flag: "${f.q}" → Yes: +20`); });
+  if(a.pain>0){ const p=Math.round(a.pain*2); score+=p; reasons.push(`Self-reported pain ${a.pain}/10: +${p}`); }
+  if(a.duration==='acute'){ score+=10; reasons.push('Sudden onset (<1 hour): +10'); }
+  else if(a.duration==='chronic'){ score-=5; reasons.push("Ongoing >2 days, no red flags: \u22125"); }
+  if(a.age==='under5'||a.age==='over65'){ score+=10; reasons.push('Higher-risk age bracket: +10'); }
+  (a.conditions||[]).forEach(c=>{
+    const pts = c==='pregnant'?10:c==='heart'?10:c==='diabetes'?5:0;
+    if(pts){ score+=pts; reasons.push(`Pre-existing condition (${c}): +${pts}`); }
+  });
+  score = Math.max(0, Math.min(100, score));
+  let category,color,label,action,eta;
+  if(score>=90){[category,color,label,action,eta]=["RED","var(--red)","Immediate","Call an ambulance or go to the ER now.",0];}
+  else if(score>=65){[category,color,label,action,eta]=["ORANGE","var(--orange)","Very Urgent","Go to the ER now — you'll be seen within ~10 minutes.",10];}
+  else if(score>=40){[category,color,label,action,eta]=["YELLOW","var(--yellow)","Urgent","Head to the hospital — estimated wait under 60 minutes.",45];}
+  else if(score>=15){[category,color,label,action,eta]=["GREEN","var(--green)","Standard","You can come in — estimated wait under 2 hours.",100];}
+  else{[category,color,label,action,eta]=["BLUE","var(--blue)","Non-urgent","Consider a clinic visit or telehealth first.",200];}
+  return {score,category,color,label,action,eta,reasons};
+}
+
+/* ---------------- 2. SHARED STATE ---------------- */
+let PATIENT_COUNTER = 100;
+let queue = []; // { id, name, symptomLabel, icon, result, time, status, transcript }
+let alerts = [];
+
+const SCENARIOS = [
+  { name:"Chest pain + sweating (58M)", color:"var(--red)",
+    answers:{symptom:"chest_pain", redFlags:[{k:"sweating",q:"Are you sweating or feeling nauseous?"},{k:"radiating",q:"Does the pain spread to your arm, jaw, or back?"}], pain:9, duration:"acute", age:"over65", conditions:["heart"]},
+    freeText:"I have really bad chest pain and I'm sweating a lot" },
+  { name:"Toddler with high fever", color:"var(--yellow)",
+    answers:{symptom:"fever", redFlags:[{k:"stiff_neck",q:"Do you have a stiff neck or a rash?"}], pain:4, duration:"acute", age:"under5", conditions:[]},
+    freeText:"My 3 year old has a high fever since this morning" },
+  { name:"Twisted ankle, can walk", color:"var(--green)",
+    answers:{symptom:"other", redFlags:[], pain:3, duration:"acute", age:"adult", conditions:[]},
+    freeText:"I twisted my ankle playing football, it's swollen but I can still walk" },
+  { name:"Severe sudden headache", color:"var(--orange)",
+    answers:{symptom:"headache", redFlags:[{k:"worst_ever",q:"Is this the worst headache you've ever had, and sudden?"}], pain:8, duration:"acute", age:"adult", conditions:[]},
+    freeText:"Sudden, the worst headache of my life, started 20 minutes ago" },
+  { name:"Mild cough, 3 days", color:"var(--blue)",
+    answers:{symptom:"other", redFlags:[], pain:1, duration:"chronic", age:"adult", conditions:[]},
+    freeText:"I've had a mild cough for a few days, nothing else" },
+];
+
+/* ---------------- 3. SEED DASHBOARD WITH A REALISTIC STARTING QUEUE ---------------- */
+function seedQueue(){
+  const seeds = [
+    { name:"Patient P-091", mins:38, s:SCENARIOS[3] },
+    { name:"Patient P-092", mins:22, s:SCENARIOS[1] },
+    { name:"Patient P-093", mins:14, s:SCENARIOS[2] },
+    { name:"Patient P-094", mins:6,  s:SCENARIOS[4] },
+  ];
+  seeds.forEach(sd=>{
+    const r = computeTriage(sd.s.answers);
+    addToQueue(sd.name, sd.s, r, sd.mins, true);
+  });
+}
+function addToQueue(name, scenario, result, minsAgo, silent){
+  const id = "P-" + (++PATIENT_COUNTER);
+  const t = new Date(Date.now() - (minsAgo||0)*60000);
+  const s = SYMPTOM_BASE[scenario.answers.symptom] || SYMPTOM_BASE.other;
+  const entry = {
+    id, name: name || id,
+    symptomLabel: s.label, icon: s.icon,
+    result, time: t,
+    status: result.category==='RED' ? "In Triage Now" : "Waiting",
+    transcript: buildTranscript(scenario, result),
+  };
+  queue.unshift(entry);
+  if(result.category==='RED' || result.category==='ORANGE'){
+    alerts.unshift({t:`${entry.id} — ${result.label} (${s.label})`, s:`Score ${result.score}/100 · ${timeAgo(t)}`, color: result.color});
+  }
+  if(!silent){ renderDashboard(); }
+}
+function buildTranscript(scenario, result){
+  const lines = [];
+  lines.push({who:"bot", text:"Hi, I'm the Nabad Triage Assistant. What's the main problem you're experiencing today?"});
+  lines.push({who:"user", text: scenario.freeText});
+  (scenario.answers.redFlags||[]).forEach(f=> lines.push({who:"bot", text:f.q}, {who:"user", text:"Yes"}) );
+  lines.push({who:"bot", text:`On a scale of 1–10, how bad is the pain or discomfort?`});
+  lines.push({who:"user", text:String(scenario.answers.pain)});
+  lines.push({who:"bot", text:"Got it. And roughly how long ago did this start?"});
+  lines.push({who:"user", text: scenario.answers.duration==='acute' ? "Less than an hour ago" : "A few days ago"});
+  return lines;
+}
+function timeAgo(t){
+  const m = Math.round((Date.now()-t.getTime())/60000);
+  if(m<1) return "just now";
+  if(m<60) return m+"m ago";
+  return Math.round(m/60)+"h ago";
+}
+
+/* ---------------- 4. VIEW SWITCHING ---------------- */
+function switchView(v){
+  document.getElementById('patientView').classList.toggle('active', v==='patient');
+  document.getElementById('dashView').classList.toggle('active', v==='dash');
+  document.getElementById('tabPatient').classList.toggle('active', v==='patient');
+  document.getElementById('tabDash').classList.toggle('active', v==='dash');
+  if(v==='dash') renderDashboard();
+}
+
+/* ---------------- 5. PATIENT CHAT ENGINE ---------------- */
+const waBody = document.getElementById('waBody');
+const chipZone = document.getElementById('chipZone');
+let convo = {}; // in-progress answers
+let pendingTimers = []; // tracks in-flight chat animation timeouts so we can cancel stale ones
+function schedule(fn, ms){ const id = setTimeout(fn, ms); pendingTimers.push(id); return id; }
+function clearPendingChat(){ pendingTimers.forEach(id=>clearTimeout(id)); pendingTimers=[]; }
+
+function scrollChat(){ waBody.scrollTop = waBody.scrollHeight; }
+function addBubble(who, html, opts){
+  const row = document.createElement('div');
+  row.className = 'bubble-row ' + who;
+  const b = document.createElement('div');
+  b.className = 'bubble ' + who;
+  b.setAttribute('data-msg', html.replace(/<br\s*\/?>/g,' ').replace(/<[^>]+>/g,''));
+  b.innerHTML = html + `<span class="time">${new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</span>`;
+  row.appendChild(b);
+  waBody.appendChild(row);
+  scrollChat();
+}
+function showTyping(cb, delay){
+  const row = document.createElement('div');
+  row.className = 'bubble-row bot';
+  row.id = 'typingRow';
+  row.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
+  waBody.appendChild(row);
+  scrollChat();
+  schedule(()=>{
+    const r = document.getElementById('typingRow');
+    if(r) r.remove();
+    cb();
+  }, delay || 900);
+}
+function setChips(chipsArr){
+  chipZone.innerHTML = '';
+  if(!chipsArr || !chipsArr.length) return;
+  const wrap = document.createElement('div');
+  wrap.className = 'chips';
+  chipsArr.forEach(c=>{
+    const el = document.createElement('button');
+    el.className='chip'; el.textContent=c.label;
+    el.onclick = ()=>{ chipZone.innerHTML=''; addBubble('user', c.label); c.action(); };
+    wrap.appendChild(el);
+  });
+  chipZone.appendChild(wrap);
+}
+function setSlider(onDone){
+  chipZone.innerHTML = '';
+  const wrap = document.createElement('div');
+  wrap.className = 'slider-wrap';
+  wrap.innerHTML = `<div class="val" id="sliderVal">5 / 10</div><input type="range" min="0" max="10" value="5" id="painSlider">`;
+  chipZone.appendChild(wrap);
+  const inp = document.getElementById('painSlider');
+  inp.oninput = ()=> document.getElementById('sliderVal').textContent = inp.value + ' / 10';
+  const btn = document.createElement('button');
+  btn.className='chip'; btn.style.margin='0 10px 10px'; btn.textContent='Confirm →';
+  btn.onclick = ()=>{ const v=Number(inp.value); chipZone.innerHTML=''; addBubble('user', v+' / 10'); onDone(v); };
+  chipZone.appendChild(btn);
+}
+
+function startConversation(prefill){
+  clearPendingChat();
+  convo = {redFlags:[], conditions:[]};
+  waBody.innerHTML = '';
+  chipZone.innerHTML = '';
+  document.getElementById('waStatus').textContent = 'typing…';
+  showTyping(()=>{
+    document.getElementById('waStatus').textContent = 'online';
+    addBubble('bot', "Hi, I'm the <b>Nabad</b> Triage Assistant 👋<br>What's the main problem you're experiencing today?");
+    setChips(Object.entries(SYMPTOM_BASE).map(([k,v])=>({
+      label: v.icon+' '+v.label,
+      action: ()=> onSymptomChosen(k)
+    })));
+    if(prefill){ schedule(()=>onSymptomChosen(prefill.symptomKey, prefill), 400); }
+  }, 700);
+}
+function onSymptomChosen(key, prefill){
+  convo.symptom = key;
+  const flags = REDFLAG_QUESTIONS[key] || [];
+  convo._flagQueue = flags.slice();
+  convo._prefill = prefill;
+  askNextRedFlag();
+}
+function askNextRedFlag(){
+  if(convo._flagQueue && convo._flagQueue.length){
+    const [k,q] = convo._flagQueue.shift();
+    document.getElementById('waStatus').textContent='typing…';
+    showTyping(()=>{
+      document.getElementById('waStatus').textContent='online';
+      addBubble('bot', q);
+      setChips([
+        {label:'Yes', action:()=>{ convo.redFlags.push({k,q}); askNextRedFlag(); }},
+        {label:'No', action:()=> askNextRedFlag()},
+      ]);
+    });
+    return;
+  }
+  askPain();
+}
+function askPain(){
+  document.getElementById('waStatus').textContent='typing…';
+  showTyping(()=>{
+    document.getElementById('waStatus').textContent='online';
+    addBubble('bot', 'On a scale of 1–10, how bad is the pain or discomfort?');
+    setSlider((v)=>{ convo.pain=v; askDuration(); });
+  });
+}
+function askDuration(){
+  document.getElementById('waStatus').textContent='typing…';
+  showTyping(()=>{
+    document.getElementById('waStatus').textContent='online';
+    addBubble('bot', 'Got it. Roughly how long ago did this start?');
+    setChips([
+      {label:'Less than 1 hour ago', action:()=>{ convo.duration='acute'; askAge(); }},
+      {label:'1–6 hours ago', action:()=>{ convo.duration='recent'; askAge(); }},
+      {label:'More than 2 days ago', action:()=>{ convo.duration='chronic'; askAge(); }},
+    ]);
+  });
+}
+function askAge(){
+  document.getElementById('waStatus').textContent='typing…';
+  showTyping(()=>{
+    document.getElementById('waStatus').textContent='online';
+    addBubble('bot', 'And which age group is this for?');
+    setChips([
+      {label:'Under 5', action:()=>{ convo.age='under5'; askConditions(); }},
+      {label:'5–17', action:()=>{ convo.age='minor'; askConditions(); }},
+      {label:'18–64', action:()=>{ convo.age='adult'; askConditions(); }},
+      {label:'65+', action:()=>{ convo.age='over65'; askConditions(); }},
+    ]);
+  });
+}
+function askConditions(){
+  document.getElementById('waStatus').textContent='typing…';
+  showTyping(()=>{
+    document.getElementById('waStatus').textContent='online';
+    addBubble('bot', 'Last question — any of these apply to you?');
+    setChips([
+      {label:'None', action:()=> finishConvo()},
+      {label:'Pregnant', action:()=>{ convo.conditions.push('pregnant'); finishConvo(); }},
+      {label:'Heart condition', action:()=>{ convo.conditions.push('heart'); finishConvo(); }},
+      {label:'Diabetes', action:()=>{ convo.conditions.push('diabetes'); finishConvo(); }},
+    ]);
+  });
+}
+function finishConvo(){
+  document.getElementById('waStatus').textContent='typing…';
+  showTyping(()=>{
+    document.getElementById('waStatus').textContent='online';
+    const result = computeTriage(convo);
+    addBubble('bot', `Thank you. I've assessed your situation using our AI triage model.`);
+    schedule(()=>{
+      const row = document.createElement('div');
+      row.className='bubble-row bot';
+      row.innerHTML = `
+        <div class="result-card">
+          <div class="result-head" style="background:${result.color}">
+            <span>${result.category} · ${result.label}</span><span>${result.score}/100</span>
+          </div>
+          <div class="result-body">
+            <div class="row"><span>Recommended action</span><b>${result.action}</b></div>
+            <div class="row"><span>Estimated time</span><b>${result.eta===0?'Immediate':'~'+result.eta+' min'}</b></div>
+            <div class="row"><span>Hospital</span><b>Tripoli General</b></div>
+            <div class="row"><span>Status</span><b>Added to live queue ✓</b></div>
+          </div>
+        </div>`;
+      waBody.appendChild(row);
+      scrollChat();
+      // push into shared hospital queue
+      const scenario = { answers: convo, freeText: "(live conversation)" };
+      const s = SYMPTOM_BASE[convo.symptom] || SYMPTOM_BASE.other;
+      const entry = {
+        id: "P-" + (++PATIENT_COUNTER),
+        name: "Patient (this session)",
+        symptomLabel: s.label, icon: s.icon,
+        result, time: new Date(),
+        status: result.category==='RED' ? "In Triage Now" : "Waiting",
+        transcript: [...document.querySelectorAll('#waBody .bubble-row')].map(r=>({
+          who: r.classList.contains('user') ? 'user':'bot',
+          text: r.querySelector('.bubble') ? (r.querySelector('.bubble').getAttribute('data-msg')||'') : ''
+        })).filter(t=>t.text && !t.text.includes('/100')),
+      };
+      queue.unshift(entry);
+      if(result.category==='RED'||result.category==='ORANGE'){
+        alerts.unshift({t:`${entry.id} — ${result.label} (${s.label})`, s:`Score ${result.score}/100 · just now`, color: result.color});
+      }
+      chipZone.innerHTML = `<div style="padding:10px;text-align:center;"><button class="chip" onclick="startConversation()">↺ Start a new conversation</button></div>`;
+    }, 500);
+  }, 1100);
+}
+
+/* ---------------- 6. SCENARIO BUTTONS (patient side) ---------------- */
+function renderScenarioList(){
+  const el = document.getElementById('scenarioList');
+  el.innerHTML = '';
+  SCENARIOS.forEach(sc=>{
+    const b = document.createElement('button');
+    b.className='scenario-btn';
+    b.innerHTML = `<span class="dot" style="background:${sc.color}"></span> ${sc.name}`;
+    b.onclick = ()=> runScenarioInChat(sc);
+    el.appendChild(b);
+  });
+}
+function runScenarioInChat(sc){
+  clearPendingChat();
+  convo = JSON.parse(JSON.stringify(sc.answers));
+  waBody.innerHTML=''; chipZone.innerHTML='';
+  document.getElementById('waStatus').textContent='typing…';
+  showTyping(()=>{
+    document.getElementById('waStatus').textContent='online';
+    addBubble('bot', "Hi, I'm the <b>Nabad</b> Triage Assistant 👋<br>What's the main problem you're experiencing today?");
+    schedule(()=>{
+      addBubble('user', sc.freeText);
+      let i=0;
+      const flags = sc.answers.redFlags||[];
+      function nextFlag(){
+        if(i<flags.length){
+          const f = flags[i++];
+          showTyping(()=>{ addBubble('bot', f.q); schedule(()=>{ addBubble('user','Yes'); nextFlag(); }, 500); });
+        } else {
+          showTyping(()=>{
+            addBubble('bot','On a scale of 1–10, how bad is the pain or discomfort?');
+            schedule(()=>{
+              addBubble('user', sc.answers.pain+' / 10');
+              showTyping(()=>{
+                addBubble('bot','Got it. Roughly how long ago did this start?');
+                schedule(()=>{
+                  addBubble('user', sc.answers.duration==='acute' ? 'Less than 1 hour ago' : sc.answers.duration==='chronic' ? 'More than 2 days ago' : '1–6 hours ago');
+                  finishScenarioResult(sc);
+                }, 500);
+              });
+            }, 500);
+          });
+        }
+      }
+      nextFlag();
+    }, 600);
+  });
+}
+function finishScenarioResult(sc){
+  showTyping(()=>{
+    const result = computeTriage(sc.answers);
+    addBubble('bot', "Thank you. I've assessed your situation using our AI triage model.");
+    schedule(()=>{
+      const row = document.createElement('div');
+      row.className='bubble-row bot';
+      row.innerHTML = `
+        <div class="result-card">
+          <div class="result-head" style="background:${result.color}">
+            <span>${result.category} · ${result.label}</span><span>${result.score}/100</span>
+          </div>
+          <div class="result-body">
+            <div class="row"><span>Recommended action</span><b>${result.action}</b></div>
+            <div class="row"><span>Estimated time</span><b>${result.eta===0?'Immediate':'~'+result.eta+' min'}</b></div>
+            <div class="row"><span>Hospital</span><b>Tripoli General</b></div>
+            <div class="row"><span>Status</span><b>Added to live queue ✓</b></div>
+          </div>
+        </div>`;
+      waBody.appendChild(row);
+      scrollChat();
+      addToQueue(sc.name.split(' (')[0], sc, result, 0);
+      chipZone.innerHTML = `<div style="padding:10px;text-align:center;"><button class="chip" onclick="startConversation()">↺ Start a new conversation</button></div>`;
+    }, 500);
+  }, 1100);
+}
+function sendFreeText(){
+  const inp = document.getElementById('freeText');
+  const val = inp.value.trim();
+  if(!val) return;
+  addBubble('user', val);
+  inp.value='';
+  // lightweight keyword classifier for free text, then continues structured flow
+  const lower = val.toLowerCase();
+  let guess = 'other';
+  if(/chest|heart/.test(lower)) guess='chest_pain';
+  else if(/breath|suffocat/.test(lower)) guess='breathing';
+  else if(/bleed|blood|cut|wound/.test(lower)) guess='bleeding';
+  else if(/fever|temperature|hot/.test(lower)) guess='fever';
+  else if(/stomach|abdomen|belly/.test(lower)) guess='abdominal';
+  else if(/head ?ache|migraine/.test(lower)) guess='headache';
+  chipZone.innerHTML='';
+  showTyping(()=> onSymptomChosen(guess));
+}
+
+/* ---------------- 7. HOSPITAL DASHBOARD RENDER ---------------- */
+function renderDashboard(){
+  renderKPIs();
+  renderQueue();
+  renderSurge();
+  renderAlerts();
+  renderSimButtons();
+}
+function renderKPIs(){
+  const total = queue.length;
+  const critical = queue.filter(q=>q.result.category==='RED'||q.result.category==='ORANGE').length;
+  const avgWait = queue.length ? Math.round(queue.reduce((a,q)=>a+q.result.eta,0)/queue.length) : 0;
+  const el = document.getElementById('kpiRow');
+  el.innerHTML = '';
+  const items = [
+    ["Patients Today", total, "since 08:00"],
+    ["Critical Cases", critical, "RED / ORANGE"],
+    ["Avg. Est. Wait", avgWait+" min", "AI-predicted"],
+    ["Queue Length", queue.filter(q=>q.status!=='Seen').length, "currently waiting"],
+  ];
+  items.forEach(it=>{
+    const d=document.createElement('div'); d.className='kpi';
+    d.innerHTML = `<div class="lbl">${it[0]}</div><div class="num">${it[1]}</div><div class="sub">${it[2]}</div>`;
+    el.appendChild(d);
+  });
+}
+function renderQueue(){
+  const body = document.getElementById('queueBody');
+  body.innerHTML = '';
+  if(!queue.length){
+    body.innerHTML = `<tr class="empty-row"><td colspan="6">No patients yet — try the Patient Experience tab, or use "Simulate incoming patients" below.</td></tr>`;
+    return;
+  }
+  queue.forEach((q,idx)=>{
+    const tr = document.createElement('tr');
+    tr.className='qrow';
+    tr.innerHTML = `
+      <td><b>${q.id}</b></td>
+      <td>${q.icon} ${q.symptomLabel}</td>
+      <td><span class="badge" style="background:${q.result.color}"><span class="d"></span>${q.result.category}</span></td>
+      <td>${q.result.score}/100</td>
+      <td>${timeAgo(q.time)}</td>
+      <td>${q.status}</td>`;
+    tr.onclick = ()=> toggleDetail(idx);
+    body.appendChild(tr);
+    const dRow = document.createElement('tr');
+    const dCell = document.createElement('td');
+    dCell.colSpan = 6;
+    dCell.innerHTML = `<div class="detail" id="detail-${idx}">
+      <b style="color:#fff;">AI reasoning trail</b>
+      ${q.result.reasons.map(r=>`<div class="reason">• ${r}</div>`).join('')}
+      <div style="margin-top:8px;"><b style="color:#fff;">Conversation transcript</b></div>
+      ${q.transcript.map(t=>`<div class="reason"><i>${t.who==='bot'?'🤖 Nabad':'🧑 Patient'}:</i> ${t.text}</div>`).join('')}
+      <div style="margin-top:8px;">
+        <button class="sim-btn" onclick="markSeen(${idx}, event)">Mark as seen</button>
+      </div>
+    </div>`;
+    dRow.appendChild(dCell);
+    body.appendChild(dRow);
+  });
+}
+function toggleDetail(idx){
+  const el = document.getElementById('detail-'+idx);
+  const isOpen = el.classList.contains('open');
+  document.querySelectorAll('.detail').forEach(d=>d.classList.remove('open'));
+  if(!isOpen) el.classList.add('open');
+}
+function markSeen(idx, ev){
+  ev.stopPropagation();
+  queue[idx].status = 'Seen';
+  renderDashboard();
+}
+function renderSurge(){
+  const el = document.getElementById('surgeChart');
+  el.innerHTML='';
+  const hours = ['8a','9a','10a','11a','12p','1p','2p','3p','4p','5p','6p','7p'];
+  const nowHour = new Date().getHours();
+  // deterministic-ish predicted pattern with a lunchtime + evening bump, plus live queue nudges the "now" bar
+  const base = [22,30,38,45,60,72,55,48,58,70,64,40];
+  const liveBoost = Math.min(queue.length*4, 20);
+  hours.forEach((h,i)=>{
+    const hourNum = 8+i;
+    const val = base[i] + (hourNum===Math.min(Math.max(nowHour,8),19) ? liveBoost : 0);
+    const wrap = document.createElement('div');
+    wrap.className='surge-bar-wrap';
+    const bar = document.createElement('div');
+    bar.className = 'surge-bar' + (hourNum===Math.min(Math.max(nowHour,8),19) ? ' now' : '');
+    bar.style.height = Math.min(val,100)+'%';
+    bar.title = val+'% capacity';
+    wrap.appendChild(bar);
+    const lbl = document.createElement('div');
+    lbl.className='surge-lbl'; lbl.textContent=h;
+    wrap.appendChild(lbl);
+    el.appendChild(wrap);
+  });
+}
+function renderAlerts(){
+  const el = document.getElementById('alertList');
+  el.innerHTML='';
+  if(!alerts.length){ el.innerHTML = '<div style="color:var(--sky);font-size:12px;font-style:italic;">No critical alerts right now.</div>'; return; }
+  alerts.slice(0,6).forEach(a=>{
+    const d = document.createElement('div');
+    d.className='alert-item';
+    d.innerHTML = `<span class="alert-dot" style="background:${a.color}"></span><div><div class="t">${a.t}</div><div class="s">${a.s}</div></div>`;
+    el.appendChild(d);
+  });
+}
+function renderSimButtons(){
+  const el = document.getElementById('simBtnRow');
+  el.innerHTML='';
+  SCENARIOS.forEach(sc=>{
+    const b = document.createElement('button');
+    b.className='sim-btn';
+    b.textContent = '+ ' + sc.name;
+    b.onclick = ()=>{
+      const result = computeTriage(sc.answers);
+      addToQueue(sc.name.split(' (')[0], sc, result, 0);
+    };
+    el.appendChild(b);
+  });
+}
+
+/* ---------------- 8. RESET / INIT ---------------- */
+function resetDemo(){
+  queue = []; alerts = []; PATIENT_COUNTER = 100;
+  seedQueue();
+  renderDashboard();
+  startConversation();
+}
+renderScenarioList();
+seedQueue();
+startConversation();
+</script>
+</body>
+</html>
